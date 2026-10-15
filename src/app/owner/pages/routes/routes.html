@@ -1,0 +1,97 @@
+<div class="space-y-4">
+  <!-- แถบควบคุม -->
+  <section class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-bold">จัดเส้นทางจัดส่ง</h1>
+      <p class="text-sm opacity-70">ออกจากร้าน 11:30 น. ต้องถึงลูกค้าทุกคนก่อน 12:30 น. · ไรเดอร์ละไม่เกิน 3 ออเดอร์</p>
+    </div>
+    <div class="flex gap-2">
+      @if (!plan()) {
+        <button class="btn btn-primary btn-lg" [disabled]="loading()" (click)="run(true)">
+          @if (loading()) { <span class="loading loading-spinner"></span> } 🚀 จัดเส้นทาง
+        </button>
+      } @else {
+        <button class="btn btn-warning btn-lg" [disabled]="loading()" (click)="run(false)">
+          @if (loading()) { <span class="loading loading-spinner"></span> } 🔄 คำนวณใหม่
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (error()) { <div role="alert" class="alert alert-error">{{ error() }}</div> }
+
+  <!-- สรุป -->
+  @if (plan(); as p) {
+    @if (isLoss()) {
+      <div role="alert" class="alert alert-error">
+        <span>⚠️ แผนนี้ขาดทุน {{ -p.profit }} บาท — กด "คำนวณใหม่" เพื่อดูแผนอื่น</span>
+      </div>
+    }
+    @if (p.late_count > 0) {
+      <div role="alert" class="alert alert-warning">
+        <span>⏰ มี {{ p.late_count }} จุดที่ถึงหลัง 12:30 น. — กด "คำนวณใหม่" เพื่อดูแผนอื่น</span>
+      </div>
+    }
+    <div class="stats stats-vertical w-full bg-base-100 shadow sm:stats-horizontal">
+      <div class="stat">
+        <div class="stat-title">{{ isLoss() ? 'ขาดทุน' : 'กำไร' }}</div>
+        <div class="stat-value" [class.text-error]="isLoss()" [class.text-success]="!isLoss()">{{ p.profit }} ฿</div>
+        <div class="stat-desc">รายได้ {{ p.revenue }} − ต้นทุนอาหาร {{ p.food_cost }} − ค่าไรเดอร์ {{ p.rider_cost }}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-title">เวลาที่ใช้ (ไรเดอร์ที่นานสุด)</div>
+        <div class="stat-value" [class.text-error]="overTime()">{{ p.total_time_min }} นาที</div>
+        <div class="stat-desc">ถึงลูกค้าคนสุดท้าย {{ clock(p.total_time_min) }} น.</div>
+      </div>
+      <div class="stat">
+        <div class="stat-title">ไรเดอร์ / ออเดอร์</div>
+        <div class="stat-value">{{ p.routes.length }} / {{ p.total_orders }}</div>
+        <div class="stat-desc">{{ p.total_boxes }} กล่อง · รวม {{ p.total_distance_km }} กม. · แผนครั้งที่ {{ p.plan_no }}</div>
+      </div>
+    </div>
+  }
+
+  <!-- แผนที่ใหญ่ -->
+  <section class="card bg-base-100 shadow">
+    <div class="card-body p-2">
+      <div #mapEl class="z-0 h-[65vh] min-h-[420px] w-full rounded-lg"></div>
+    </div>
+  </section>
+
+  @if (!plan() && !loading()) {
+    <p class="text-center opacity-60">กด "จัดเส้นทาง" เพื่อให้ระบบแบ่งงานและวางเส้นทางไรเดอร์จากออเดอร์ปัจจุบัน</p>
+  }
+
+  <!-- รายละเอียดแต่ละไรเดอร์ -->
+  @if (plan(); as p) {
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      @for (r of p.routes; track r.job_code; let i = $index) {
+        <section class="card bg-base-100 shadow" [style.border-top]="'6px solid ' + color(i).hex">
+          <div class="card-body gap-2 p-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold">{{ r.rider }} <span class="text-sm font-normal opacity-70">(เส้น{{ color(i).name }})</span></h3>
+              <div class="badge badge-neutral">{{ r.total_boxes }} กล่อง</div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+              <span>เลขใบงาน</span>
+              <button class="btn btn-sm btn-outline font-mono tracking-widest" (click)="copy(r.job_code)">
+                {{ copied() === r.job_code ? 'คัดลอกแล้ว ✓' : r.job_code }}
+              </button>
+              <a class="link link-primary" [href]="'/rider/' + r.job_code" target="_blank">เปิดหน้าไรเดอร์</a>
+            </div>
+            <p class="text-sm opacity-70">{{ r.total_distance_km }} กม. · {{ r.total_time_min }} นาที · ค่าไรเดอร์ {{ r.cost }} ฿</p>
+            <ol class="space-y-1 text-sm">
+              @for (s of r.stops; track s.sequence) {
+                <li class="flex items-center gap-2">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" [style.background]="color(i).hex">{{ s.sequence }}</span>
+                  <span class="flex-1">{{ s.customer }} · {{ s.boxes }} กล่อง</span>
+                  <span [class.text-error]="s.late" [class.font-bold]="s.late">{{ clock(s.arrive_min) }}</span>
+                </li>
+              }
+            </ol>
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>

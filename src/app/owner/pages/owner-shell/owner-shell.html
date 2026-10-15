@@ -1,0 +1,19 @@
+<div class="min-h-dvh bg-base-200" data-theme="light">
+  <header class="navbar bg-neutral text-neutral-content sticky top-0 z-[1000] px-4 shadow">
+    <div class="flex-1 gap-2">
+      <span class="text-xl font-bold">🍱 ข้าวกล่องเดลิเวอรี</span>
+      <span class="badge badge-warning">เจ้าของร้าน</span>
+    </div>
+    <nav class="flex gap-1 items-center">
+      @for (m of menus; track m.path) {
+        <a [routerLink]="m.path" routerLinkActive="bg-warning text-warning-content" class="btn btn-ghost btn-sm">
+          {{ m.icon }} {{ m.label }}
+        </a>
+      }
+      <a routerLink="/" class="btn btn-outline btn-warning btn-xs ml-2">🏠 หน้าหลัก</a>
+    </nav>
+  </header>
+  <main class="mx-auto max-w-7xl p-4">
+    <router-outlet />
+  </main>
+</div>

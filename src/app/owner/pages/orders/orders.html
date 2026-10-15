@@ -1,0 +1,90 @@
+<div class="grid gap-4 lg:grid-cols-3">
+  <div class="space-y-4">
+    <section class="card bg-base-100 shadow">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base">{{ editingId() === null ? 'เพิ่มออเดอร์' : 'แก้ไขออเดอร์' }}</h2>
+        <label class="form-control">
+          <span class="label-text mb-1">ลูกค้า</span>
+          <select class="select select-bordered w-full" [ngModel]="customerId()" (ngModelChange)="customerId.set($event)">
+            <option [ngValue]="null" disabled>— เลือกลูกค้า —</option>
+            @for (c of customers(); track c.id) { <option [ngValue]="c.id">{{ c.name }}</option> }
+          </select>
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1">จำนวนกล่อง</span>
+          <div class="join">
+            @for (b of boxOptions; track b) {
+              <button type="button" class="btn join-item flex-1" [class.btn-primary]="boxes() === b" (click)="boxes.set(b)">{{ b }}</button>
+            }
+          </div>
+        </label>
+        @if (error()) { <div role="alert" class="alert alert-error py-2 text-sm">{{ error() }}</div> }
+        <div class="card-actions justify-end">
+          @if (editingId() !== null) { <button class="btn btn-ghost" (click)="reset()">ยกเลิก</button> }
+          <button class="btn btn-primary" (click)="save()">{{ editingId() === null ? 'เพิ่มออเดอร์' : 'บันทึก' }}</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card bg-base-100 shadow">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base">จัดการออเดอร์</h2>
+        <!-- ซ่อนปุ่มจำลองออเดอร์ไว้ในคอมเมนต์ เผื่อเปิดใช้งานในอนาคต
+        <p class="text-sm opacity-70">จำลองสร้างข้อมูลออเดอร์อัตโนมัติ 20–30 รายการผ่านระบบ Backend</p>
+        <button class="btn btn-secondary mt-2" [disabled]="busy()" (click)="simulate()">
+          @if (busy()) { <span class="loading loading-spinner loading-sm"></span> } 🎲 จำลองออเดอร์ (20-30 รายการ)
+        </button>
+        -->
+        <button class="btn btn-outline btn-error btn-sm w-full" [disabled]="busy() || !orders().length" (click)="clearAll()">
+          @if (busy()) { <span class="loading loading-spinner loading-sm"></span> } 🗑️ ล้างออเดอร์ทั้งหมด
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <section class="card bg-base-100 shadow lg:col-span-2">
+    <div class="card-body p-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="card-title text-base">
+          ออเดอร์วันนี้
+          <span class="badge badge-neutral">{{ orders().length }} ออเดอร์</span>
+          <span class="badge badge-warning">{{ totalBoxes() }} กล่อง</span>
+        </h2>
+        <a routerLink="/owner/routes" class="btn btn-primary btn-sm">ไปจัดเส้นทาง →</a>
+      </div>
+      @if (loading()) {
+        <span class="loading loading-spinner mx-auto"></span>
+      } @else {
+        <div class="max-h-[560px] overflow-auto">
+          <table class="table table-sm table-pin-rows">
+            <thead>
+              <tr>
+                <th># รหัสออเดอร์</th>
+                <th>ลูกค้า</th>
+                <th class="text-center">จำนวนกล่อง</th>
+                <th>ระยะทาง (กม.)</th>
+                <th class="text-right">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of orders(); track o.id) {
+                <tr class="hover" [class.bg-warning/20]="editingId() === o.id">
+                  <td>{{ o.id }}</td>
+                  <td>{{ o.customer_name }}</td>
+                  <td class="text-center font-bold">{{ o.boxes }} กล่อง</td>
+                  <td class="text-xs opacity-75">{{ o.distance_km != null ? (o.distance_km + ' กม.') : '-' }}</td>
+                  <td class="whitespace-nowrap text-right space-x-1">
+                    <button class="btn btn-ghost btn-xs text-primary" (click)="edit(o)">แก้ไข</button>
+                    <button class="btn btn-ghost btn-xs text-error" (click)="remove(o)">ลบ</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="text-center opacity-60">ยังไม่มีออเดอร์ — เพิ่มเอง หรือกด "สุ่มออเดอร์"</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </section>
+</div>

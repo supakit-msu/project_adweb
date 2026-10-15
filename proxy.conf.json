@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://node-express-mysql-3eto.onrender.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

@@ -1,0 +1,92 @@
+<div class="grid gap-4 lg:grid-cols-2">
+  <!-- แผนที่ -->
+  <section class="card bg-base-100 shadow">
+    <div class="card-body p-3">
+      <h2 class="card-title text-base">ตำแหน่งบ้านลูกค้า</h2>
+      <p class="text-sm opacity-70">คลิกบนแผนที่เพื่อปักหมุดบ้านลูกค้า · จุดสีน้ำเงิน = ลูกค้าที่บันทึกแล้ว</p>
+      <div #mapEl class="z-0 h-[420px] w-full rounded-lg lg:h-[560px]"></div>
+    </div>
+  </section>
+
+  <div class="space-y-4">
+    <!-- ฟอร์ม -->
+    <section class="card bg-base-100 shadow">
+      <div class="card-body p-4">
+        <h2 class="card-title text-base">{{ editingId() === null ? 'เพิ่มลูกค้า' : 'แก้ไขลูกค้า' }}</h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="form-control">
+            <span class="label-text mb-1">ชื่อ</span>
+            <input class="input input-bordered w-full" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="เช่น สมชาย ใจดี" />
+          </label>
+          <label class="form-control">
+            <span class="label-text mb-1">เบอร์โทร</span>
+            <input class="input input-bordered w-full" inputmode="numeric" [ngModel]="phone()" (ngModelChange)="phone.set($event)" placeholder="0812345678" />
+          </label>
+          <label class="form-control">
+            <span class="label-text mb-1">ละติจูด</span>
+            <input class="input input-bordered w-full" type="number" step="any" [ngModel]="lat()" (ngModelChange)="lat.set($event); onCoordChange()" />
+          </label>
+          <label class="form-control">
+            <span class="label-text mb-1">ลองจิจูด</span>
+            <input class="input input-bordered w-full" type="number" step="any" [ngModel]="lng()" (ngModelChange)="lng.set($event); onCoordChange()" />
+          </label>
+        </div>
+        @if (error()) { <div role="alert" class="alert alert-error py-2 text-sm">{{ error() }}</div> }
+        <div class="card-actions justify-end">
+          @if (editingId() !== null) { <button class="btn btn-ghost" (click)="reset()">ยกเลิก</button> }
+          <button class="btn btn-primary" (click)="save()">{{ editingId() === null ? 'เพิ่มลูกค้า' : 'บันทึก' }}</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ตาราง -->
+    <section class="card bg-base-100 shadow">
+      <div class="card-body p-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="card-title text-base">รายชื่อลูกค้า <span class="badge badge-neutral">{{ customers().length }}</span></h2>
+          <button class="btn btn-xs" [class.btn-primary]="isNearbyFilter()" (click)="isNearbyFilter() ? load() : filterNearby1km()">
+            {{ isNearbyFilter() ? '✕ ล้างฟิลเตอร์' : '📍 ใกล้ร้าน 1 กม.' }}
+          </button>
+        </div>
+
+        <!-- กล่องค้นหาตามชื่อ/นามสกุล -->
+        <div class="join w-full mt-2">
+          <input class="input input-sm input-bordered join-item w-full"
+                 placeholder="ค้นหาชื่อ หรือนามสกุล..."
+                 [ngModel]="searchKeyword()"
+                 (ngModelChange)="searchKeyword.set($event)"
+                 (keyup.enter)="search()" />
+          <button class="btn btn-sm btn-primary join-item" (click)="search()">ค้นหา</button>
+          @if (searchKeyword()) {
+            <button class="btn btn-sm join-item" (click)="searchKeyword.set(''); load()">ล้าง</button>
+          }
+        </div>
+
+        @if (loading()) {
+          <span class="loading loading-spinner mx-auto my-4"></span>
+        } @else {
+          <div class="max-h-[320px] overflow-auto">
+            <table class="table table-sm table-pin-rows">
+              <thead><tr><th>ชื่อ</th><th>เบอร์</th><th>พิกัด</th><th></th></tr></thead>
+              <tbody>
+                @for (c of customers(); track c.id) {
+                  <tr class="hover" [class.bg-warning/20]="editingId() === c.id">
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.phone }}</td>
+                    <td class="text-xs opacity-70">{{ c.lat }}, {{ c.lng }}</td>
+                    <td class="whitespace-nowrap text-right">
+                      <button class="btn btn-ghost btn-xs" (click)="edit(c)">แก้ไข</button>
+                      <button class="btn btn-ghost btn-xs text-error" (click)="remove(c)">ลบ</button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4" class="text-center opacity-60">ยังไม่มีลูกค้า</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+</div>

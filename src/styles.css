@@ -1,0 +1,10 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import 'tailwindcss';
+@plugin "daisyui";
+@import 'leaflet/dist/leaflet.css';
+
+body {
+  font-family: 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  margin: 0;
+}
