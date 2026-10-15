@@ -28,14 +28,12 @@
 
     <section class="card bg-base-100 shadow">
       <div class="card-body p-4">
-        <h2 class="card-title text-base">จัดการออเดอร์</h2>
-        <!-- ซ่อนปุ่มจำลองออเดอร์ไว้ในคอมเมนต์ เผื่อเปิดใช้งานในอนาคต
+        <h2 class="card-title text-base">จำลองการสั่งออเดอร์</h2>
         <p class="text-sm opacity-70">จำลองสร้างข้อมูลออเดอร์อัตโนมัติ 20–30 รายการผ่านระบบ Backend</p>
         <button class="btn btn-secondary mt-2" [disabled]="busy()" (click)="simulate()">
           @if (busy()) { <span class="loading loading-spinner loading-sm"></span> } 🎲 จำลองออเดอร์ (20-30 รายการ)
         </button>
-        -->
-        <button class="btn btn-outline btn-error btn-sm w-full" [disabled]="busy() || !orders().length" (click)="clearAll()">
+        <button class="btn btn-outline btn-error btn-sm mt-1" [disabled]="busy() || !orders().length" (click)="clearAll()">
           @if (busy()) { <span class="loading loading-spinner loading-sm"></span> } 🗑️ ล้างออเดอร์ทั้งหมด
         </button>
       </div>
